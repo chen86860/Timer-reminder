@@ -1,5 +1,17 @@
 {% extends "layout.html" %}
 {% block body %}
-<h1>Timer-Reminder</h1>
-<p>{{body}}</p>
+<!--<h1>Timer-Reminder</h1>-->
+
+<h1>{{Title}}</h1><span>{{Author}}</span>
+<p>{{Press}} - {{PressDate}}</p>
+<p>馆藏数目：{{Num}} </p>
+<p>保留数目：{{SaveNum}}</p>
+<p>可供借阅数目：{{AvailNum}}</p>
+<hr>
+已借阅详情：<p>{{UnavailNum}}</p>
+<ul>
+    {% for status in UnavailStatus %}
+    <li>{{status}}</li>
+    {% endfor %}
+</ul>
 {% endblock %}

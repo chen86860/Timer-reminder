@@ -1,0 +1,994 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>
+	
+        图书馆书目检索系统
+    
+</title><link id="ctl00_linkcss" href="css/style.css" rel="stylesheet" type="text/css" />
+
+    <script type="text/javascript" src="js/prototype.js"></script>
+
+    <script type="text/javascript" src="js/common.js"></script>
+
+    <script type="text/javascript" src="js/autocomplete.js"></script>
+
+    <script type="text/javascript">
+        var _islog = false;
+        var _suburl = "";
+        var shurl = _suburl + "user/mysearchhistory.aspx";
+        function ilogin()
+        {
+            new internallogin(iloginsuccess,_suburl);
+        }
+        function islogin()
+        {
+            $('islogoutspan').hide();
+            $('isloginspan').show();
+            $('loginmsg').show();
+            _islog = true;
+            /*更新评分信息*/
+            if ($('pingfencontent') != null)
+                getscore();
+           /*更新检索历史提示登录信息*/
+           if ($('sh_login_hint') != null)
+                $('sh_login_hint').hide();
+            /*如果是bookinfo则显示预约信息*/
+            var url1 = window.location.pathname;
+            if (url1.indexOf("bookinfo.aspx") >=0 )
+            {
+                //检查系统预约参数
+                if(1 == 0)
+                {
+                    listbookwithresv();
+                }
+            }
+        }
+        function islogout()
+        {
+            $('islogoutspan').show();
+            $('isloginspan').hide();
+            $('loginmsg').hide();
+            _islog = false;
+        }
+        function iloginsuccess()
+        {
+            var wurl = window.location.href;
+            var rurlIndex;
+            if ((rurlIndex = wurl.indexOf("login.aspx?ReturnUrl=")) != -1)
+            {
+                var rurl = decodeURIComponent(wurl.substr(rurlIndex + 21));
+                if (isie())
+                    window.location.href = rurl;
+            }
+            islogin();
+//            if (getscore != undefined && getscore != null && typeof getscore == 'function')
+//                getscore();
+        }
+        function iloginforsh()
+        {
+            islogin();
+            gotosh();
+        }
+        function ilogout()
+        {
+            internallogout(null,_suburl);
+            _islog = false;
+        }
+        function ilogout_callback()
+        {
+            islogout();
+        }
+        function gotosh()
+        {
+           if (_islog == false)
+           {
+                new internallogin(iloginforsh,_suburl);
+           }
+           else
+           {
+                window.location.href = shurl;
+           } 
+        }
+    </script>
+
+</head>
+<body>
+    <!-- 头部-->
+    <div id="header" class="clearFix">
+        <div id="headerlogo">
+            <img id="ctl00_headerimg" src="images/headeropac4gif.gif" border="0" />
+        </div>
+        <div id="headertext">
+            <span id="ctl00_sitenamelbl">五邑大学图书馆书目检索系统</span>
+        </div>
+        <div id="headermenu" class="clearFix" style="width: 45%">
+            <div class="fl" style="width: 56%">
+                <span id="loginmsg" style="display: none;">
+                    <!--<marquee width="150px" align="middle" behavior="scroll" scrollamount="2"></marquee>-->
+                    登录成功。 如果您使用的是公共电脑，请在使用完毕后，务必退出登录，切记！
+                </span>
+            </div>
+            <div class="fr" style="width: 42%">
+                <a href="setlanguage.aspx?lang=zh-cn"><font color="#ff9933">中文</font></a>&nbsp;
+                <a href="setlanguage.aspx?lang=en-us"><font color="#ff9933">English</font></a> &nbsp;&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp;
+                <span id="islogoutspan" style="display: none"><a href="javascript:void(0)" onclick="ilogin()"
+                    class="redlink">
+                    登录
+                </a></span><span id="isloginspan" style="display: none"><a href="javascript:void(0)"
+                    onclick="ilogout()" class="redlink">
+                    退出
+                </a></span>&nbsp;&nbsp;&nbsp;|&nbsp;&nbsp;&nbsp; <a href="javascript:gotosh()">
+                    我的检索历史
+                </a>
+                <br />
+                今天是
+                &nbsp;&nbsp;&nbsp;&nbsp;<span id="ctl00_nowlbl">2016年10月06日 星期四</span>
+            </div>
+        </div>
+    </div>
+    <!--内容-->
+    <div id="content">
+        
+
+<!--菜单 -->
+     <div id="pagemenu">
+         
+                <ul>
+            
+                <li>
+                    <a href='search.aspx' class="select">目录检索</a>
+                </li>
+            
+                <li>
+                    <a href='clsbrowse.aspx' >分类导航</a>
+                </li>
+            
+                <li>
+                    <a href='book_rank.aspx' >读书指引</a>
+                </li>
+            
+                <li>
+                    <a href='xstb.aspx' >新书通报</a>
+                </li>
+            
+                <li>
+                    <a href='readerrecommend.aspx' >读者荐购</a>
+                </li>
+            
+                <li>
+                    <a href='overduebooks_f.aspx' >提醒服务</a>
+                </li>
+            
+                <li>
+                    <a href='user/userinfo.aspx' >我的图书馆</a>
+                </li>
+            
+                
+                </ul>
+              
+    </div>
+    <div id="pagesubmenu">
+        
+                <ul>
+            
+                <li>
+                    <a href="search.aspx" class="select">快速检索</a>
+                </li>
+            
+                <li>
+                    <a href="search_more.aspx" >高级检索</a>
+                </li>
+            
+                </ul>
+              
+    </div>
+
+<!--联图脚本-->
+<script src="http://data.libtop.com/scripts/jquery/1.4/jquery.min.js" type="text/javascript"></script>
+<script type="text/javascript" language="javascript">
+	jQuery.noConflict();
+</script>
+<script src="http://data.libtop.com/scripts/xopac/121.js" type="text/javascript"></script>
+<!--联图脚本-->
+<script type="text/javascript">
+/*if(window.history.length>0)
+{
+    window.history.forward();
+}*/
+var resvclick = 0;
+var _ctrlno = "545068";
+var loadingimg = new Image();
+loadingimg.src = "images/loading.gif";
+var loading = "<span style=\"color:#f87600\"><img id=\"loadingimg\" src=\"\"/>&nbsp;正在载入,请稍候...</span>";
+/*相关借阅*/
+var showRelatedBorrow = function(ctrlno)
+{
+    $('rbdd').innerHTML = loading;
+    $('loadingimg').src = loadingimg.src;
+    var params = "ctrlno=" + ctrlno;
+    var showRelatedBorrowAjax = new Ajax.Request(
+        'showrelatedborrowAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: showRelatedBorrowResponse
+            }
+     );
+}
+
+function showRelatedBorrowResponse(response)
+{
+    var result = response.responseText;
+    $('rbdd').innerHTML = result;
+}
+/*显示典藏地点详情*/
+function showLibInfo(libid)
+{
+    //chrome不支持showmodaldialog
+    if (window.showModalDialog && !ischrome())
+        window.showModalDialog("libinfo.aspx?libno=" + libid + "&rd=" + Math.random(),'','dialogHeight : 360px;dialogWidth : 600px;edge : Raised;center : Yes;help : No;resizable : No;status : no;scroll : yes');
+    else
+    {
+        var feature= "width=600,height=360,menubar=no,toolbar=no,location=no,";     
+        feature+= "scrollbars=no,status=no,modal=yes ";         
+        window.open("libinfo.aspx?libno=" + libid + "&rd=" + Math.random(),null,feature);
+    }
+}
+function showReaderInfo(barcode,libid)
+{
+        //chrome不支持showmodaldialog
+    if (window.showModalDialog && !ischrome())
+        window.showModalDialog("borrowerinfo.aspx?b="+barcode+"&libno=" + libid + "&rd=" + Math.random(),'','dialogHeight : 360px;dialogWidth : 600px;edge : Raised;center : Yes;help : No;resizable : No;status : no;scroll : yes');
+    else
+    {
+        var feature= "width=600,height=360,menubar=no,toolbar=no,location=no,";     
+        feature+= "scrollbars=no,status=no,modal=yes ";         
+        window.open("borrowerinfo.aspx?b="+barcode+"&libno=" + libid + "&rd=" + Math.random(),null,feature);
+    }
+}
+function changedd(imgobj)
+{
+    var tmp = $(imgobj).up(0).next(0);
+    tmp.toggle();
+    if (!tmp.visible())
+    {
+        /*修改图片*/
+        var oImage=new Image()   
+        oImage.src="images/arrow_right.gif";
+        imgobj.src = oImage.src;
+    }
+    else
+    {
+        /*修改图片*/
+        var oImage=new Image()   
+        oImage.src="images/arrow_down.gif";
+        imgobj.src = oImage.src;
+    }
+    
+}
+/*星图片*/
+var xgimg=new Image()   
+xgimg.src="images/xing_gray.gif";
+var ximg=new Image()
+ximg.src="images/xing.gif";
+function enpfimg(pfiobj)
+{
+    for (var i = $(pfiobj).previousSiblings().length-1;i >= 0;i--)
+    {
+        var pobj = $(pfiobj).previous(i);
+        if (pobj != null)
+        {
+            pobj.src = ximg.src;
+        }
+    }
+    pfiobj.src = ximg.src;
+}
+function expfimg(pfiobj)
+{
+    for (var i = $(pfiobj).previousSiblings().length-1;i >= 0;i--)
+    {
+        var pobj = $(pfiobj).previous(i);
+        if (pobj != null)
+        {
+            pobj.src = xgimg.src;
+        }
+    }
+    pfiobj.src = xgimg.src;
+}
+/*评分*/
+var hasscore = false;
+function getscore()
+{
+    $('pingfenloading').show();
+    $('pingfenmyscore').hide();
+    $('pingfencontent').hide();
+    var total = 0,avescore = 0;
+    var params = "ctrlno=" + _ctrlno;
+    var getBookScoreAjax = new Ajax.Request(
+        'getBookScoreAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: function(response)
+                {
+                    var result = response.responseText;
+                    if (result == "1" || result == "")
+                    {
+                        $('pingfenloading').hide();
+                        $('pingfencontent').hide();
+                        $('pingfenmyscore').hide();
+                        $('pingfenloading').up(0).innerHTML = "获取评分失败！";
+                    }
+                    else
+                    {
+                        var rcs = result.split("@@");
+                        if (rcs[0] == "2" || rcs[0] == "3")
+                        {
+                             $('pingfentotal').innerHTML = rcs[1];
+                            /*处理总分星星*/
+                            for (i = 0;i < $('pingfenavescore').descendants().length;i++)
+                            {
+                                if (i < rcs[2])
+                                    $('pingfenavescore').down(i).src = ximg.src;
+                                else
+                                    $('pingfenavescore').down(i).src = xgimg.src;
+                            }
+                            /*处理用户*/
+                            if (_islog && rcs[3] != "")
+                            {
+                                if (rcs[3] != "-1")
+                                {
+                                    $('pingfenmyscore').innerHTML = "我要重新评分：<span class=\"rf\">" + rcs[4] + "</span>分  ";
+                                    $('pingfenmyscore').innerHTML += "<a href=\"javascript:rescore()\">我要重新评分</a>";
+                                    $('pingfenuserscore').hide();
+                                    $('pingfenmyscore').show();
+                                    hasscore = true;
+                                }
+                                else
+                                {
+                                    $('pingfenuserscore').show();
+                                    $('pingfenmyscore').hide();
+                                    hasscore = false;
+                                }
+                            }
+                            else
+                            {
+                                $('pingfenuserscore').show();
+                                $('pingfenmyscore').hide();
+                                hasscore = false;
+                            }
+                            $('pingfenloading').hide();
+                            $('pingfencontent').show();
+                        }
+                        else
+                        {
+                            $('pingfenloading').hide();
+                            $('pingfencontent').hide();
+                            $('pingfenloading').up(0).innerHTML = "获取评分失败！";
+                        }
+                    }
+                    
+                }
+            }
+     );
+}
+var score_s = 0;
+function score(s)
+{
+    score_s = s;
+    if (_islog)
+   {
+        realscore();
+   }
+   else
+   {
+        new internallogin(score_loginsuccess,_suburl);
+   }
+    
+}
+function score_loginsuccess()
+{
+    iloginsuccess();
+    realscore()
+}
+var rsco = 0;
+function realscore()
+{
+    if (rsco != 0)
+    {
+        alert("刚才的评分操作还没完成！");
+        return;
+    }
+    rsco = 1;
+    var params = "ctrlno=" + _ctrlno + "&sc=" + score_s;
+    var addBookScoreAjax = new Ajax.Request(
+        'addBookScoreAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: function(response)
+                {
+                    var result = response.responseText;
+                    if (result == "0")
+                    {
+                        getscore();
+                    }
+                    else
+                    {
+                        alert("评分失败！");
+                    }
+                    rsco = 0;
+                }
+            }
+     );
+}
+function rescore()
+{
+    $('pingfenuserscore').show();
+    $('pingfenmyscore').show();
+}
+/*收藏*/
+function collect()
+{
+   if (_islog)
+   {
+        realcollect();
+   }
+   else
+   {
+        new internallogin(collect_loginsuccess,_suburl);
+   }
+}
+function collect_loginsuccess()
+{
+    iloginsuccess();
+    realcollect()
+}
+var rcol = 0;
+function realcollect()
+{
+    if (rcol != 0)
+    {
+        alert("刚才的收藏操作还没完成！");
+        return;
+    }
+    rcol = 1;
+    $('handling').show();
+    var params = "ctrlno=" + _ctrlno;
+    var addBookShelfAjax = new Ajax.Request(
+        'addBookShelfAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: showAddBookShelfResponse
+            }
+     );
+}
+function showAddBookShelfResponse(response)
+{
+    var result = response.responseText;
+    if (result == "0")
+    {
+        alert("收藏此书成功！");
+        //更新收藏信息
+        resetcollectcount();
+    }
+    else
+    if (result == "1")
+    {
+        alert("此书已经在您的书架上！");
+    }
+    else
+    if (result == "2")
+    {
+        alert("收藏操作失败！");
+    }
+    $('handling').hide();
+    rcol = 0;
+}
+/*更新收藏信息*/
+function resetcollectcount()
+{
+    var params = "ctrlno=" + _ctrlno;
+    var getbookcollectcountAjax = new Ajax.Request(
+        'getbookcollectcountAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: showbookcollectcountResponse
+            }
+     );
+}
+
+function showbookcollectcountResponse(response)
+{
+    var result = response.responseText;
+    if (result != "")
+    {
+        var collect_count = 0;
+        try
+        {
+            var collect_count = parseInt(result);
+            if (collect_count > 0)
+            {
+                
+                $('collectcountspan').innerHTML = "收藏:" + result + "次";
+                $('collectcountspan').show();
+            }
+            
+        }catch(e)
+        {
+        }
+    }
+}
+
+/*预约*/
+function reserve()
+{
+   if (_islog)
+   {
+        check_resv();
+        //listbookwithresv();
+        //window.location.href="#bottomresv";
+   }
+   else
+   {
+        new internallogin(reserve_loginsuccess,_suburl);
+   }
+}
+function reserve_loginsuccess()
+{
+    resvclick = 1;
+    iloginsuccess();
+}
+//listbookwithresv1,bookwithresvResponse1用于islogin(),其中没有锚定位//如果islogin()中使用listbookwithresv，则登录之后进入bookinfo页面会自动定位到锚//执行ajax绑定预约信息.listbookwithresv,bookwithresvResponse用于iloginsuccess()
+function listbookwithresv()
+{
+    var params = "ctrlno=" + 545068;
+    var showfacetAjax = new Ajax.Request(
+        'bookinfowithresvAjax.aspx',
+        {
+            method:'get',
+            parameters:params,
+            onComplete: bookwithresvResponse
+        }
+    );
+}
+function bookwithresvResponse(response)
+{
+    var result = response.responseText;
+    var r1 = result.indexOf("<div id=\"bardiv\">");
+    var r2 = result.lastIndexOf("</div>");
+    //如果登录，更新藏书情况列表，显示预约信息
+    if (r1 == -1)
+    {
+         $('bardiv').innerHTML = "";
+    }
+    else
+    {
+        var result2 = result.substr(r1+17,r2-r1-17);
+        $('bardiv').innerHTML = result2;
+    }
+    if (resvclick == 1)
+    {
+        check_resv();
+        //window.location.href="#bottomresv";
+    }
+}
+
+
+//提交预约
+function check_resv()
+{
+    //var alertstr = '';
+    var vols="";
+    var state=false;
+    var ids = document.documentElement.getElementsByTagName("input");  
+    for (var i = 0; i < ids.length; i++)      
+    {   
+        //alertstr += i+" value="+ids[i].value+" id="+ids[i].id + "               ";
+        if(ids[i].checked)
+        {
+            vols = vols + ids[i].value+"@";
+            state=true;
+        }
+    }
+    //$('testlbl').value = alertstr;
+    //alert($('txtvolbooktpe').value);
+    //无分卷或者有分卷并已经选择
+    if(document.getElementById("txtvolcount").value =="1"|| state)
+    {
+        resv_ajax(vols);
+    }
+    else if(document.getElementById("txtvolcount").value !="1" && document.getElementById("txtvolcount").value !="" && !state)
+    {
+        alert("未选择卷期或预约人数已达上限");
+    }
+    else if(document.getElementById("txtvolcount").value =="")
+    {
+        var errmsg= document.getElementsByName("1")[0].innerHTML;
+        alert(errmsg);
+    }
+}
+
+function resv_ajax(selectedvols)
+{
+    var vols = selectedvols;
+    if(vols!="")
+    {
+        var vol = vols;
+    }else
+    {
+        var vol = "@";
+    }
+    
+    var ctrlno = $('txtctrlno').value;
+    var volbooktype = $('txtvolbooktpe').value;
+    var org = $('txtorg').value;
+    var bktype = $('txtbktype').value;
+    var params = "vol="+vol+"&volbooktype="+volbooktype+"&org="+org+"&bktype="+bktype+"&ctrlno="+ctrlno;
+    var addresvpAjax = new Ajax.Request(
+        'addresvpAjax.aspx',
+            {
+                method:'get',
+                parameters:params,
+                onComplete: showResponse
+            }
+     );
+}
+
+function showResponse(response)
+{
+    var resultstatus = response.responseText;
+    //window.location.href="user/resvp.aspx?ctrlno="+545068+"&status="+resultstatus;
+    showyyresult(resultstatus);
+    window.location.reload();
+}
+
+function showyyresult(resultstatus)
+{
+    //alert(resultstatus);
+        //chrome不支持showmodaldialog
+    if (window.showModalDialog && !ischrome())
+        window.showModalDialog("resvpresult.aspx?ctrlno="+545068+"&status="+escape(resultstatus)+"&rd=" + Math.random(),'','dialogHeight : 220px;dialogWidth : 660px;edge : Raised;center : Yes;help : No;resizable : No;status : no;scroll : yes');
+    else
+    {
+        var feature= "width=650,min-height=220,menubar=no,toolbar=no,location=no,";     
+        feature+= "scrollbars=no,status=no,modal=yes ";         
+        window.open("resvpresult.aspx?ctrlno="+545068+"&status="+escape(resultstatus)+"&rd=" + Math.random(),null,feature);
+    }
+}
+
+function showyygz()
+{
+        //chrome不支持showmodaldialog
+    if (window.showModalDialog && !ischrome())
+        window.showModalDialog("libraryborrowrule.aspx?rd=" + Math.random(),'','dialogHeight : 400px;dialogWidth : 600px;edge : Raised;center : Yes;help : No;resizable : No;status : no;scroll : yes');
+    else
+    {
+        var feature= "width=600,min-height=360,menubar=no,toolbar=no,location=no,";     
+        feature+= "scrollbars=no,status=no,modal=yes ";         
+        window.open("libraryborrowrule.aspx?rd=" + Math.random(),null,feature);
+    }
+}
+
+function profrecommend()
+{
+        //chrome不支持showmodaldialog
+    if (window.showModalDialog && !ischrome())
+        window.showModalDialog("profrecommend.aspx?ctrlno="+545068+"&id="+0+ "&rd=" + Math.random(),'','dialogHeight : 400px;dialogWidth : 600px;edge : Raised;center : Yes;help : No;resizable : No;status : no;scroll : yes');
+    else
+    {
+        var feature= "width=600,min-height=360,menubar=no,toolbar=no,location=no,";     
+        feature+= "scrollbars=no,status=no,modal=yes ";         
+        window.open("profrecommend.aspx?ctrlno="+545068+"&id="+0+ "&rd=" + Math.random(),null,feature);
+    }
+}
+</script>
+
+<div id="bookinfomain" class="clearFix">
+    <div id="bookinfocarddiv" class="fl">
+        <div class="head clearFix">
+            <div class="headleft"></div>
+            <div class="headmiddle">
+                <span id="ctl00_ContentPlaceHolder1_ctrlnolbl">系统控制号：545068</span></div>
+            <div class="headright"></div>
+            <div class="headactinfo">
+                <nobr>
+                <span id="handling" style="display:none"><img src="images/loading.gif"/>正在处理，请稍候...</span>
+                
+                <a id="collecthandler" href="javascript:collect()" class="act" title="把书目添加到我的书架中">我要收藏</a>
+                <span id="collectcountspan" style="display:">收藏:6次</span>
+                </nobr>
+            </div>
+        </div>
+        <div class="body">
+            <div id="carddiv">
+                <span id="ctl00_ContentPlaceHolder1_bookcardinfolbl">　　学会提问＝Asking the right questions：a guide to critical thinking／(美) 尼尔·布朗, 斯图尔特·基利著；吴礼敬译．—北京：<a href="searchresult.aspx?publisher_f=%bb%fa%d0%b5%b9%a4%d2%b5%b3%f6%b0%e6%c9%e7&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">机械工业出版社</a>，2013.9<br/>　　251页：图；21cm<br/>　　<br/>　　据原书第10版译出<br/>　　由Pearson Education (培生教育出版集团) 授权<br/>　　本书共分为十二章, 主要内容包括: 学会提出好问题 ; 论题和结论是什么 ; 理由是什么 ; 哪些词语意思不明确等。<br/><br/>　　ISBN978-7-111-40659-4：CNY35.00<br/>　　Ⅰ．①学会提问②Asking the right questions : a guide to critical thinking　　Ⅱ．①<a href="searchresult.aspx?author_f=%b2%bc%c0%ca&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">布朗</a>②<a href="searchresult.aspx?author_f=%bb%f9%c0%fb&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">基利</a>③<a href="searchresult.aspx?author_f=%ce%e2%c0%f1%be%b4&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">吴礼敬</a>　　Ⅲ．①<a href="searchresult.aspx?keyword_f=%cb%bc%ce%ac%d0%c4%c0%ed%d1%a7&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">思维心理学</a>  - <a href="searchresult.aspx?keyword_f=si+wei+xin+li+xue&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">si wei xin li xue</a>　　Ⅳ．①<a href="searchresult.aspx?clc_f=B842.5&dt=ALL&cl=ALL&dp=20&sf=M_PUB_YEAR&ob=DESC&sm=table&dept=ALL">B842.5</a></span>
+            </div>
+            <hr />
+            <div id="erdiv">
+                <h5 class="tbc">相关资源&nbsp;&nbsp;&nbsp;&nbsp;<span id="ctl00_ContentPlaceHolder1_lblSearchDescribe"></span></h5>
+                <div>
+                    <script>
+                        var booktr = document.getElementById('bardiv').getElementsByTagName('tbody')[0].getElementsByTagName('tr')
+                    </script>
+                </div>
+            </div>
+            <hr />
+            <div id="bardiv">
+                <h5 class="tbc">藏书情况</h5>
+                <div>
+                          <table cellpadding="4" width="100%" border="1" class="tb">
+                              <thead class="tbhead">
+                                <tr>
+                                  <td width="20%">馆藏地</td>
+                                  
+                                  <td width="18%">索取号</td>
+                                  <td width="10%">登录号</td>
+                                  <td width="6%">卷期</td>
+                                  <td width="6%">年代</td>
+                                  <td width="16%">状态</td>
+                                  <td width="10%">借阅类型</td>
+                                 </tr>
+                               </thead>
+                               <tbody>
+                        
+                            <tr>
+                                  <td><a href="javascript:void(0)" title="点击可查看此地点的详细介绍" onclick='showLibInfo("231")'>政法哲学馆</a>
+                                  
+                                  </td>
+                                  
+                                  <td>B842.5/B97b(:)</td>
+                                  <td>A1294857</td>
+                                  <td class="tbr"> </td>
+                                  <td> </td>
+                                  <td>
+                                      2016.11.20 应还
+                                      
+                                  </td>
+                                  <td>普通图书</td>
+                           </tr>
+                        
+                            <tr>
+                                  <td><a href="javascript:void(0)" title="点击可查看此地点的详细介绍" onclick='showLibInfo("231")'>政法哲学馆</a>
+                                  
+                                  </td>
+                                  
+                                  <td>B842.5/B97b(:)</td>
+                                  <td>A1294858</td>
+                                  <td class="tbr"> </td>
+                                  <td> </td>
+                                  <td>
+                                      2016.10.10 应还
+                                      
+                                  </td>
+                                  <td>普通图书</td>
+                           </tr>
+                        
+                            <tr>
+                                  <td><a href="javascript:void(0)" title="点击可查看此地点的详细介绍" onclick='showLibInfo("231")'>政法哲学馆</a>
+                                  
+                                  </td>
+                                  
+                                  <td>B842.5/B97b(:)</td>
+                                  <td>A1294859</td>
+                                  <td class="tbr"> </td>
+                                  <td> </td>
+                                  <td>
+                                      2016.11.25 应还
+                                      
+                                  </td>
+                                  <td>普通图书</td>
+                           </tr>
+                        
+                             </tbody>
+                            </table>
+                        
+                    <!--<label id="ctl00_ContentPlaceHolder1_lblcheck"></label><label id="ctl00_ContentPlaceHolder1_lblyy"></label>
+                    <a name="bottomresv"></a>
+                    -->
+                </div>
+                <input name="ctl00$ContentPlaceHolder1$txtctrlno" type="hidden" id="ctl00_ContentPlaceHolder1_txtctrlno" /><input name="ctl00$ContentPlaceHolder1$txtvolcount" type="hidden" id="ctl00_ContentPlaceHolder1_txtvolcount" /><input name="ctl00$ContentPlaceHolder1$txtvol" type="hidden" id="ctl00_ContentPlaceHolder1_txtvol" /><input name="ctl00$ContentPlaceHolder1$txtvolbooktpe" type="hidden" id="ctl00_ContentPlaceHolder1_txtvolbooktpe" /><input name="ctl00$ContentPlaceHolder1$txtorg" type="hidden" id="ctl00_ContentPlaceHolder1_txtorg" /><input name="ctl00$ContentPlaceHolder1$txtbktype" type="hidden" id="ctl00_ContentPlaceHolder1_txtbktype" />
+            </div>
+            <br />
+        </div>
+    </div>
+    <div id="otherbookinfodiv" class="fr">
+        
+        <div id="bookcover" style="width:100%">
+            <img src="images/loading.gif"/>正在获取封面，请稍候...
+        </div>
+        <script type="text/javascript">
+            //获取封面
+            if($('bookcover') != undefined)
+            {
+                if ("978-7-111-40659-4" != '')
+                {
+                    setTimeout(function(){
+                        getBookCover("学会提问","978-7-111-40659-4");
+                    },600);
+                }
+                else
+                {
+                    $('bookcover').innerHTML = "";
+                    $('bookcover').hide();
+                }
+            }
+            function processGBSBookInfo(booksInfo)
+            {   
+                for (i in booksInfo)
+                {
+                    var book = booksInfo[i];
+                    if (book.thumbnail_url != undefined)
+                    {
+                        var imgurl = book.thumbnail_url.replace(/zoom=5/g,"zoom=1");
+                        $('bookcover').innerHTML = "<img style=\"border:1px solid #ddd\" src=\"" + imgurl + "\" onerror=\"javascript:$(this).up(0).innerHTML='您的IP不能访问Google封面！'\"/>";
+                        $('bookcover').innerHTML += "<br\>（此封面由Google提供）";
+                        if (book.preview_url != undefined)
+                        {
+                            $('bookcover').innerHTML += "<a href='" + book.preview_url + "' target='_blank'><img src='http://code.google.com/apis/books/images/gbs_preview_button1.gif'/></a>";
+                        }
+                        $('bookcover').show();
+                    }
+                }
+            }
+            function getBookCoverWithGoogle(isbn)
+            {
+                //格式化isbn号（去除横杠）                isbn = isbn.replace(/-/g,'');
+                // Delete any previous Google Booksearch JSON queries.
+                  var jsonScript = document.getElementById("jsonScript");
+                  if (jsonScript) {
+                    jsonScript.parentNode.removeChild(jsonScript);
+                  }
+                  // Add a script element with the src as the user's Google Booksearch query. 
+                  // JSON output is specified by including the alt=json-in-script argument
+                  // and the callback funtion is also specified as a URI argument.
+                  var scriptElement = document.createElement("script");
+                  scriptElement.setAttribute("id", "jsonScript");
+                  scriptElement.setAttribute("src",
+                      "http://books.google.com/books?bibkeys=ISBN:" + 
+                      isbn  + "&jscmd=viewapi&callback=processGBSBookInfo");
+                  scriptElement.setAttribute("type", "text/javascript");
+                  // make the request to Google booksearch
+                  document.documentElement.firstChild.appendChild(scriptElement);
+            }
+            function getBookCover(title,isbn)
+            {
+                    var params = "ctrlno=545068" + "&title=" + encodeURIComponent(title) + "&isbn=" + isbn;
+                    var getBookCoverAjax = new Ajax.Request(
+                        'getBookCoverByDuXiuAjax.aspx',
+                            {
+                                method:'post',
+                                parameters:encodeURI(params),
+                                timeoutSeconds:5,
+                                onFailure:function(o){ 
+                                    $('bookcover').innerHTML = "";
+                                    $('bookcover').hide();
+                                    getBookCoverWithGoogle(isbn);},
+                                onComplete: function(o){
+                                    var result=o.responseText;
+                                    if (result == '')
+                                    {
+                                        $('bookcover').innerHTML = "获取读秀封面超时!";
+                                        getBookCoverWithGoogle(isbn);
+                                    }
+                                    else
+                                    if (result == "1")
+                                    {
+                                        $('bookcover').innerHTML = "获取读秀封面失败!";
+                                        getBookCoverWithGoogle(isbn);
+                                    }
+                                    else
+                                    if (result == "2")
+                                    {
+                                        //$('bookcover').innerHTML = "暂无封面!";
+                                        $('bookcover').innerHTML = "";
+                                        $('bookcover').hide();
+                                        getBookCoverWithGoogle(isbn);
+                                    }
+                                    else
+                                    {
+                                        //alert(result);
+                                        $('bookcover').innerHTML = "<img style=\"border:1px solid #ddd\" src=\"" + result + "\" onerror=\"javascript:$(this).up(0).innerHTML='封面读取失败或您的IP不能访问读秀封面！'\"/>";
+                                        $('bookcover').innerHTML += "<br\><br\>（此封面由读秀提供）";
+                                    }
+                                }
+                                
+                            }
+                     );   
+            }
+        </script>
+        
+        <dl>
+            <dt><img src="images/arrow_down.gif" onclick="changedd(this)"/>借阅信息</dt>
+            <dd>
+                近<span id="ctl00_ContentPlaceHolder1_blcyearlbl">1</span>年借阅次数：<span id="ctl00_ContentPlaceHolder1_blclbl">15</span>
+            </dd>
+        </dl>
+        
+        <dl>
+            <dt><img src="images/arrow_down.gif" onclick="changedd(this)"/>评分</dt>
+            <dd>
+                <div id="pingfenloading"><img src="images/loading.gif"/>&nbsp;正在获取中，请稍候...</div>
+                <div id="pingfencontent" style="display:none;">
+                    <div class="pingfen">
+                        总票数：<span id="pingfentotal">0</span>
+                    </div>
+                    <div class="pingfen" id="pingfenavescore">总体评分：
+
+                              <img src="images/xing_gray.gif"/>
+                              <img src="images/xing_gray.gif"/>
+                              <img src="images/xing_gray.gif"/>
+                              <img src="images/xing_gray.gif"/>
+                              <img src="images/xing_gray.gif"/></div>
+                    <div id="pingfenmyscore" class="pingfen"></div>
+                    <div class="pingfen ns" id="pingfenuserscore">我要评分：
+
+                              <img src="images/xing_gray.gif" title="1分" onclick="javascript:score(1)" onmouseover="enpfimg(this)" onmouseout="expfimg(this)"/>
+                              <img src="images/xing_gray.gif" title="2分" onclick="javascript:score(2)" onmouseover="enpfimg(this)" onmouseout="expfimg(this)"/>
+                              <img src="images/xing_gray.gif" title="3分" onclick="javascript:score(3)" onmouseover="enpfimg(this)" onmouseout="expfimg(this)"/>
+                              <img src="images/xing_gray.gif" title="4分" onclick="javascript:score(4)" onmouseover="enpfimg(this)" onmouseout="expfimg(this)"/>
+                              <img src="images/xing_gray.gif" title="5分" onclick="javascript:score(5)" onmouseover="enpfimg(this)" onmouseout="expfimg(this)"/></div>
+                </div>
+            </dd>
+        </dl>
+            <!--获取评分-->
+           <script type="text/javascript">
+                getscore();
+           </script>
+        
+        <dl>
+            <dt><img src="images/arrow_down.gif" onclick="changedd(this)"/>扩展检索</dt>
+            <dd>
+                
+                        
+                            <a href="tskzjs/chaoxing.aspx?redirectUrl=http%3a%2f%2f202.192.240.220%3a8088%2fmarkbook%2fBookSearch.jsp%3fKeyWord%3d%7b0%7d%26KeyName%3d0&keyword=%e5%ad%a6%e4%bc%9a%e6%8f%90%e9%97%ae&e=gb2312" target="_blank">查超星</a>
+                            &nbsp;&nbsp;
+                        
+                            <a href="http://www.duxiu.com/search?channel=search&sw=%d1%a7%bb%e1%cc%e1%ce%ca&Field=1" target="_blank">查读秀</a>
+                            &nbsp;&nbsp;
+                        
+                            <a href="http://book.baidu.com/s?tn=baidubook&ct=2097152&si=book.baidu.com&cl=3&wd=%d1%a7%bb%e1%cc%e1%ce%ca" target="_blank">查百度</a>
+                            &nbsp;&nbsp;
+                        
+                            <a href="http://books.google.cn/books?q=%e5%ad%a6%e4%bc%9a%e6%8f%90%e9%97%ae" target="_blank">查google</a>
+                            &nbsp;&nbsp;
+                        
+                            <a href="http://www.douban.com/subject_search?cat=1001&search_text=%e5%ad%a6%e4%bc%9a%e6%8f%90%e9%97%ae" target="_blank">查豆瓣</a>
+                            &nbsp;&nbsp;
+                        
+                        
+            </dd>
+        </dl>
+        
+        <dl>
+            <dt><img src="images/arrow_down.gif" onclick="changedd(this)"/>相关借阅</dt>
+            <dd id="rbdd">
+                <a href="javascript:void(0)" onclick='showRelatedBorrow("545068")' class="gf">点击查看借阅此书的读者近一年来所借阅的其他相关图书</a>
+            </dd>
+        </dl>
+        
+    </div>
+  
+</div>
+
+ 
+    
+ 
+    </div>
+    <!--版权部分-->
+    <div id="footer">
+			<div class="clearFix footer">		
+				<div class="fl">
+					<img src="images/logo-sulcmis-opac.gif"/>
+				</div>
+				<div class="fl footertext">
+					<span id="ctl00_footertextlbl">Copyright &copy;2008-2009. SULCMIS OPAC 4.01.  All rights reserved.<br />版权所有：五邑大学图书馆 联系电话：3296617</span>
+				</div>
+			</div>
+    </div>
+</body>
+<script type="text/javascript">islogout()</script>
+</html>
