@@ -13,16 +13,11 @@ router.get('/', function (req, res, next) {
     checkbook(url, function (status, result) {
         book = result
 
-
         var tryNum = 0;
 
         var checkRest = setInterval(function () {
             checkbook(url, function (status, result) {
                 book = result
-                if (tryNum == 10) {
-                    book.AvailNum = 2;
-                }
-
                 //有可供借阅的书时
                 if (book.AvailNum > 0) {
                     var recipients = "chen86860@gmail.com",
