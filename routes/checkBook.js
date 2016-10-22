@@ -24,8 +24,8 @@ booksShema.find({title: /学会/}, function (err, result) {
         bookstatus = result.bookstatus
         console.log(bookstatus)
         book.AvailNum = bookstatus.availNum
-        book.SaveNum = bookstatus.saveNum
-        book.Unavail = bookstatus.unavail
+        // book.SaveNum = bookstatus.saveNum
+        // book.Unavail = bookstatus.unavail
     }
 })
 
